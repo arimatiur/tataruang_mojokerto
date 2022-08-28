@@ -53,7 +53,13 @@
         const view = new MapView({
           container: "viewDiv",
           map: map,
-          zoom: 5
+          extent: {
+            xmin: -9177811,
+            ymin: 4247000,
+            xmax: -9176791,
+            ymax: 4247784,
+            spatialReference: 102100
+          }
         });
         // Buat widget Measure
         const measure = new AreaMeasurement2D({
