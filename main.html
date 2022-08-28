@@ -41,8 +41,9 @@
         GeoJSONLayer
       ) => {
         const geojsonlayer = new GeoJSONLayer({
-          url: "https://github.com/arimatiur/hosting_geojson/blob/main/file.geojson"
+          url: "https://github.com/arimatiur/hosting_geojson/blob/main/map.geojson"
         });
+        console.log(geojsonlayer);
         // Buat Map
         const map = new Map({
           basemap: "hybrid"
