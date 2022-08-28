@@ -40,8 +40,15 @@
         AreaMeasurement2D,
         GeoJSONLayer
       ) => {
+        //Buat Popup template
+        const popupLayer = {
+          title : "{Sci_Name}",
+          content : "<b>Nama</b> : {Dedication}"
+        };
+        // Buat Layer GeoJSON
         const geojsonlayer = new GeoJSONLayer({
-          url: "https://raw.githubusercontent.com/arimatiur/hosting_geojson/main/map.geojson"
+          url: "https://raw.githubusercontent.com/arimatiur/hosting_geojson/main/map.geojson",
+          popupTemplate: popupLayer
         });
         console.log(geojsonlayer);
         // Buat Map
