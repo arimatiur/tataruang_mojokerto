@@ -16,17 +16,27 @@
       }
     </style>
     <script>
-      require(["esri/Map", "esri/views/MapView"], (Map, MapView) => {
-        const map = new Map({
-          basemap: "streets-vector"
+      require([
+        "esri/Map",
+        "esri/views/MapView",
+        "esri/layers/GeoJSONLayer"
+      ], function (
+        Map,
+        MapView,
+        GeoJSONLayer) {
+          const layerPolaRuang = new GeoJSONLayer({
+            
+          });
+          const map = new Map({
+            basemap: "streets-vector"
+          });
+          const view = new MapView({
+            map: map,
+            zoom: 15,
+            center: [112.4354276967371, -7.471953679273513],
+            container: "viewDiv"
+          });
         });
-        const view = new MapView({
-          map: map,
-          zoom: 15,
-          center: [112.4354276967371, -7.471953679273513],
-          container: "viewDiv"
-        });
-      });
     </script>
   </head>
   <body>
