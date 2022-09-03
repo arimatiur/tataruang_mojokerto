@@ -24,15 +24,21 @@
         Map,
         MapView,
         GeoJSONLayer) {
+          const popupPolaRuang = {
+            title: "Data Layer",
+            content: "<b>Zona</b> : {ZONA}<br><hr><b>BWP</b> : {BWP}<br><hr><b>Kode</b> : {KODE}<br><hr><b>SBWP</b> : {SBWP}<br><hr>"
+          };
           const layerPolaRuang = new GeoJSONLayer({
-            
+            popupTemplate: popupPolaRuang,
+            url: "https://raw.githubusercontent.com/arimatiur/tataruang_mojokerto/main/geojson/polaruang.geojson"
           });
           const map = new Map({
-            basemap: "streets-vector"
+            basemap: "osm",
+            layers: layerPolaRuang
           });
           const view = new MapView({
             map: map,
-            zoom: 15,
+            zoom: 14,
             center: [112.4354276967371, -7.471953679273513],
             container: "viewDiv"
           });
