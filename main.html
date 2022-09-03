@@ -19,11 +19,19 @@
       require([
         "esri/Map",
         "esri/views/MapView",
-        "esri/layers/GeoJSONLayer"
+        "esri/layers/GeoJSONLayer",
+        "esri/Basemap",
+        "esri/widgets/BasemapGallery",
+        "esri/widgets/Expand",
+        "esri/widgets/AreaMeasurement2D"
       ], function (
         Map,
         MapView,
-        GeoJSONLayer) {
+        GeoJSONLayer,
+        Basemap,
+        BasemapGallery,
+        Expand,
+        AreaMeasurement2D) {
           // Function untuk warnain layer
           function createFillSymbol(value, color) {
             return {
@@ -60,7 +68,7 @@
           }
           // Bikin template popup
           const popupPolaRuang = {
-            title: "Data Layer",
+            title: "Layer RDTR",
             content: "<b>Zona</b> : {ZONA}<br><hr><b>BWP</b> : {BWP}<br><hr><b>Kode</b> : {KODE}<br><hr><b>SBWP</b> : {SBWP}<br><hr>"
           };
           // Bikin layernya
@@ -71,7 +79,7 @@
           });
           // Buat map
           const map = new Map({
-            basemap: "osm",
+            basemap: "topo-vector",
             layers: layerPolaRuang // Layernya kalau banyak jadiin array kalau satu langsung objectnya aja
           });
           //Buat mapview dipasang di element viewDiv
@@ -79,7 +87,52 @@
             map: map,
             zoom: 14,
             center: [112.4354276967371, -7.471953679273513],
+            popup: {
+              dockEnabled: true,
+              autoOpenEnabled: true,
+              dockOptions: {
+                breakpoint: false,
+                position: "top-right",
+                buttonEnabled: false
+              }
+            },
             container: "viewDiv"
+          });
+          //PEMBUATAN WIDGET
+
+          //Basemap Gallery Start
+          const streetsvectorBasemap = Basemap.fromId("streets-vector");
+          const osmBasemap = Basemap.fromId("osm");
+          const satelliteBasemap = Basemap.fromId("satellite");
+          const topovectorBasemap = Basemap.fromId("topo-vector");
+          const basemapGallery = new BasemapGallery({
+            view: view,
+            source: [topovectorBasemap, osmBasemap, satelliteBasemap, streetsvectorBasemap]
+          });
+          //Basemap Gallery End
+
+          //AreaMeasurement2D Start
+          const measureWidget = new AreaMeasurement2D({
+            view: view
+          });
+          //AreaMeasurement2D End
+
+          //Expand widget
+          const bgExpand = new Expand({
+            view: view,
+            content: basemapGallery,
+            expandIconClass: "esri-icon-basemap"
+          });
+          view.ui.add(bgExpand, {
+            position: "top-left"
+          });
+          const measureExpand = new Expand({
+            view: view,
+            content: measureWidget,
+            expandIconClass: "esri-icon-measure-area"
+          });
+          view.ui.add(measureExpand, {
+            position: "top-left"
           });
         });
     </script>
