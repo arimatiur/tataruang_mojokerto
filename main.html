@@ -24,18 +24,57 @@
         Map,
         MapView,
         GeoJSONLayer) {
+          // Function untuk warnain layer
+          function createFillSymbol(value, color) {
+            return {
+              "value": value,
+              "label": value,
+              "symbol": {
+                "color": color,
+                "type": "simple-fill",
+                "style": "solid",
+                "outline": {
+                  "style": "solid",
+                  "width": "0.5px",
+                  "color": "#6E6E6E"
+                }
+              }
+            };
+          }
+          // Bikin simbologi layernya
+          const rdtrLayerRenderer = {
+            type: "unique-value",
+            field: "ZONA",
+            uniqueValueInfos: [
+              createFillSymbol("Perlindungan Setempat", "#99FF33"), // Functionnya dipanggil
+              createFillSymbol("Ruang Terbuka Hijau", "#00E271"),
+              createFillSymbol("Zona Campuran", "#E8BEFF"),
+              createFillSymbol("Zona Industri", "#9C9C9C"),
+              createFillSymbol("Zona Perdagangan dan Jasa", "#EB7878"),
+              createFillSymbol("Zona Perkantoran", "#C88CFF"),
+              createFillSymbol("Zona Perumahan", "#FAFA6E"),
+              createFillSymbol("Zona Peruntukan Khusus", "#CCCCD6"),
+              createFillSymbol("Zona Peruntukan Lainnya", "#579687"),
+              createFillSymbol("Zona Sarana Pelayanan Umum", "#DCA078"),
+            ]
+          }
+          // Bikin template popup
           const popupPolaRuang = {
             title: "Data Layer",
             content: "<b>Zona</b> : {ZONA}<br><hr><b>BWP</b> : {BWP}<br><hr><b>Kode</b> : {KODE}<br><hr><b>SBWP</b> : {SBWP}<br><hr>"
           };
+          // Bikin layernya
           const layerPolaRuang = new GeoJSONLayer({
-            popupTemplate: popupPolaRuang,
+            popupTemplate: popupPolaRuang, // Masukin template popup
+            renderer: rdtrLayerRenderer, // Masukin simbologinya disini (rdtrLayerRenderer)
             url: "https://raw.githubusercontent.com/arimatiur/tataruang_mojokerto/main/geojson/polaruang.geojson"
           });
+          // Buat map
           const map = new Map({
             basemap: "osm",
-            layers: layerPolaRuang
+            layers: layerPolaRuang // Layernya kalau banyak jadiin array kalau satu langsung objectnya aja
           });
+          //Buat mapview dipasang di element viewDiv
           const view = new MapView({
             map: map,
             zoom: 14,
