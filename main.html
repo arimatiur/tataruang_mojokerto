@@ -23,7 +23,8 @@
         "esri/Basemap",
         "esri/widgets/BasemapGallery",
         "esri/widgets/Expand",
-        "esri/widgets/AreaMeasurement2D"
+        "esri/widgets/AreaMeasurement2D",
+        "esri/widgets/Legend"
       ], function (
         Map,
         MapView,
@@ -31,7 +32,8 @@
         Basemap,
         BasemapGallery,
         Expand,
-        AreaMeasurement2D) {
+        AreaMeasurement2D,
+        Legend) {
           // Function untuk warnain layer
           function createFillSymbol(value, color) {
             return {
@@ -109,15 +111,6 @@
             view: view,
             source: [topovectorBasemap, osmBasemap, satelliteBasemap, streetsvectorBasemap]
           });
-          //Basemap Gallery End
-
-          //AreaMeasurement2D Start
-          const measureWidget = new AreaMeasurement2D({
-            view: view
-          });
-          //AreaMeasurement2D End
-
-          //Expand widget
           const bgExpand = new Expand({
             view: view,
             content: basemapGallery,
@@ -125,6 +118,12 @@
           });
           view.ui.add(bgExpand, {
             position: "top-left"
+          });
+          //Basemap Gallery End
+
+          //AreaMeasurement2D Start
+          const measureWidget = new AreaMeasurement2D({
+            view: view
           });
           const measureExpand = new Expand({
             view: view,
@@ -134,6 +133,25 @@
           view.ui.add(measureExpand, {
             position: "top-left"
           });
+          //AreaMeasurement2D End
+
+          //Legend Start
+          const legend = new Legend({
+            view: view,
+            layerInfos: [{
+              title: "Rencana Detail Tata Ruang",
+              layer: layerPolaRuang
+            }]
+          });
+          const legendExpand = new Expand({
+            view: view,
+            content: legend,
+            expandIconClass: "esri-icon-legend"
+          });
+          view.ui.add(legendExpand, {
+            position: "top-left"
+          });
+          //Legend End
         });
     </script>
   </head>
