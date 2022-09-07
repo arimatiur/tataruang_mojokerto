@@ -23,8 +23,9 @@
         "esri/Basemap",
         "esri/widgets/BasemapGallery",
         "esri/widgets/Expand",
-        "esri/widgets/AreaMeasurement2D",
-        "esri/widgets/Legend"
+        "esri/widgets/Legend",
+        "esri/widgets/Measurement",
+        "esri/core/reactiveUtils"
       ], function (
         Map,
         MapView,
@@ -32,8 +33,9 @@
         Basemap,
         BasemapGallery,
         Expand,
-        AreaMeasurement2D,
-        Legend) {
+        Legend,
+        Measurement,
+        reactiveUtils) {
           // Function untuk warnain layer
           function createFillSymbol(value, color) {
             return {
@@ -122,17 +124,33 @@
           //Basemap Gallery End
 
           //AreaMeasurement2D Start
-          const measureWidget = new AreaMeasurement2D({
+          const measurement = new Measurement({
             view: view
           });
-          const measureExpand = new Expand({
+
+          const expand = new Expand({
             view: view,
-            content: measureWidget,
-            expandIconClass: "esri-icon-measure-area"
+            expandTooltip: "Ukur Jarak",
+            expandIconClass: "esri-icon-measure-line",
+            collapseIconClass: "esri-icon-trash"
           });
-          view.ui.add(measureExpand, {
-            position: "top-left"
-          });
+          view.ui.add(expand, "top-left");
+
+          reactiveUtils.watch(
+            function () {
+              return expand.expanded
+            },
+            function () {
+              distanceMeasurement();
+            }
+          );
+          function distanceMeasurement() {
+            if (expand.expanded) {
+              measurement.activeTool = "distance";
+            } else if (!expand.expanded) {
+              measurement.clear();
+            }
+          }
           //AreaMeasurement2D End
 
           //Legend Start
