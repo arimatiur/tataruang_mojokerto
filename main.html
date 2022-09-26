@@ -25,7 +25,8 @@
         "esri/widgets/Expand",
         "esri/widgets/Legend",
         "esri/widgets/Measurement",
-        "esri/core/reactiveUtils"
+        "esri/core/reactiveUtils",
+        "esri/widgets/Search"
       ], function (
         Map,
         MapView,
@@ -35,7 +36,8 @@
         Expand,
         Legend,
         Measurement,
-        reactiveUtils) {
+        reactiveUtils,
+        Search) {
           // Function untuk warnain layer
           function createFillSymbol(value, color) {
             return {
@@ -123,7 +125,7 @@
           });
           //Basemap Gallery End
 
-          //AreaMeasurement2D Start
+          //DistanceMeasurement2D Start
           const measurement = new Measurement({
             view: view
           });
@@ -151,7 +153,7 @@
               measurement.clear();
             }
           }
-          //AreaMeasurement2D End
+          //DistanceMeasurement2D End
 
           //Legend Start
           const legend = new Legend({
@@ -170,6 +172,15 @@
             position: "top-left"
           });
           //Legend End
+
+          //Search Start
+          const search = new Search({
+            view: view
+          });
+          view.ui.add(search, {
+            position: "top-right"
+          });
+          //Search End
         });
     </script>
   </head>
