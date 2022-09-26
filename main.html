@@ -123,7 +123,8 @@
           const bgExpand = new Expand({
             view: view,
             content: basemapGallery,
-            expandIconClass: "esri-icon-basemap"
+            expandIconClass: "esri-icon-basemap",
+            expandTooltip: "Basemap"
           });
           view.ui.add(bgExpand, {
             position: "top-left"
@@ -171,7 +172,8 @@
           const legendExpand = new Expand({
             view: view,
             content: legend,
-            expandIconClass: "esri-icon-legend"
+            expandIconClass: "esri-icon-legend",
+            expandTooltip: "Legenda"
           });
           view.ui.add(legendExpand, {
             position: "top-left"
@@ -194,7 +196,8 @@
           const expandFilter = new Expand({
             view: view,
             content: zonaElement,
-            expandIconClass: "esri-icon-filter"
+            expandIconClass: "esri-icon-filter",
+            expandTooltip: "Filter Zona"
           });
           view.ui.add(expandFilter, {
             position: "top-left"
@@ -212,7 +215,6 @@
                 }
               }
             };
-            console.log(queryWhere);
             zonaLayerView.filter = {
               where: queryWhere.join(" ").toString()
             };
@@ -220,7 +222,6 @@
           view.whenLayerView(layerPolaRuang).then(function (layerView) {
             zonaLayerView = layerView;
           });
-
           view.on("click", eventHandler);
           //Filter End
         });
