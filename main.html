@@ -14,6 +14,11 @@
         height: 100%;
         width: 100%;
       }
+      #filter-zona {
+        height: 220px;
+        width: 220px;
+        background-color: white;
+      }
     </style>
     <script>
       require([
@@ -181,10 +186,90 @@
             position: "top-right"
           });
           //Search End
+
+          //Filter Start
+          let zonaLayerView;
+          const zonaElement = document.getElementById("filter-zona");
+          zonaElement.addEventListener("click", filterByZona);
+          const expandFilter = new Expand({
+            view: view,
+            content: zonaElement,
+            expandIconClass: "esri-icon-filter"
+          });
+          view.ui.add(expandFilter, {
+            position: "top-left"
+          });
+
+          function filterByZona() {
+            const markedCheckbox = document.getElementsByClassName("checkboxCL");
+            const queryWhere = [];
+            for (const checkbox of markedCheckbox) {
+              if (checkbox.checked) {
+                if (queryWhere.length > 0) {
+                  queryWhere.push("OR ZONA LIKE '%" + checkbox.value + "%'");
+                } else {
+                  queryWhere.push("ZONA LIKE '%" + checkbox.value + "%'");
+                }
+              }
+            };
+            console.log(queryWhere);
+            zonaLayerView.filter = {
+              where: queryWhere.join(" ").toString()
+            };
+          };
+          view.whenLayerView(layerPolaRuang).then(function (layerView) {
+            zonaLayerView = layerView;
+          });
+
+          view.on("click", eventHandler);
+          //Filter End
         });
     </script>
   </head>
   <body>
-    <div id="viewDiv"></div>
+    <div id="viewDiv">
+      <div id="filter-zona">
+        <div class="form-check">
+          <input type="checkbox" value="Perlindungan Setempat" class="checkboxCL">
+            <label>Perlindungan Setempat</label>
+        </div>
+        <div class="form-check">
+          <input type="checkbox" value="Ruang Terbuka Hijau" class="checkboxCL">
+            <label>Ruang Terbuka Hijau</label>
+        </div>
+        <div class="form-check">
+          <input type="checkbox" value="Zona Campuran" class="checkboxCL">
+            <label>Zona Campuran</label>
+        </div>
+        <div class="form-check">
+          <input type="checkbox" value="Zona Industri" class="checkboxCL">
+            <label>Zona Industri</label>
+        </div>
+        <div class="form-check">
+          <input type="checkbox" value="Zona Perdagangan" class="checkboxCL">
+            <label>Zona Perdagangan</label>
+        </div>
+        <div class="form-check">
+          <input type="checkbox" value="Zona Perkantoran" class="checkboxCL">
+            <label>Zona Perkantoran</label>
+        </div>
+        <div class="form-check">
+          <input type="checkbox" value="Zona Perumahan" class="checkboxCL">
+            <label>Zona Perumahan</label>
+        </div>
+        <div class="form-check">
+          <input type="checkbox" value="Zona Peruntukan Khusus" class="checkboxCL">
+            <label>Zona Peruntukan Khusus</label>
+        </div>
+        <div class="form-check">
+          <input type="checkbox" value="Zona Peruntukan Lainnya" class="checkboxCL">
+            <label>Zona Peruntukan Lainnya</label>
+        </div>
+        <div class="form-check">
+          <input type="checkbox" value="Zona Sarana Pelayanan Umum" class="checkboxCL">
+            <label>Zona Sarana Pelayanan Umum</label>
+        </div>
+      </div>
+    </div>
   </body>
 </html>
