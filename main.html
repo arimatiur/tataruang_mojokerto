@@ -31,7 +31,8 @@
         "esri/widgets/Legend",
         "esri/widgets/Measurement",
         "esri/core/reactiveUtils",
-        "esri/widgets/Search"
+        "esri/widgets/Search",
+        "esri/widgets/ScaleBar"
       ], function (
         Map,
         MapView,
@@ -42,7 +43,8 @@
         Legend,
         Measurement,
         reactiveUtils,
-        Search) {
+        Search,
+        ScaleBar) {
           // Function untuk warnain layer
           function createFillSymbol(value, color) {
             return {
@@ -188,6 +190,17 @@
             position: "top-right"
           });
           //Search End
+
+          //ScaleBar Start
+          const scaleBar = new ScaleBar({
+            view: view,
+            unit: "metric",
+            style: "line"
+          });
+          view.ui.add(scaleBar, {
+            position: "bottom-right"
+          });
+          //ScaleBar End
 
           //Filter Start
           let zonaLayerView;
