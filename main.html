@@ -156,7 +156,7 @@
 
           var perhitunganZona = document.getElementById("perhitungan-zona");
 
-          view.ui.add(info, {
+          view.ui.add(perhitunganZona, {
             position: "bottom-left"
           });
 
@@ -219,6 +219,13 @@
               case "area":
                 activeWidget = new AreaMeasurement2D({
                   view: view
+                });
+
+                // Measurement labels can be accessed from this property
+                activeWidget.watch("viewModel.measurement", function (measurement) {
+                  var ukur = measurement.area.toFixed(2);
+                  // ukur.replace(/,/g, '');
+                  document.getElementById("ukur").value = ukur;
                 });
 
                 // skip the initial 'new measurement' button
@@ -389,9 +396,10 @@
           title="Measure area"
         ></button>
       </div>
+      <div id="perhitungan-zona">
+        <input type="text" id="ukur" value="">
+      </div>
     </div>
-    <div id="perhitungan-zona">
-      <span id="name">Sample Text</span>
-    </div>
+
   </body>
 </html>
