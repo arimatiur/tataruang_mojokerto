@@ -1,10 +1,12 @@
-<!DOCTYPE html>
-<html lang="en" dir="ltr">
+<html>
   <head>
-    <meta charset="utf-8">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no"/>
     <title>Peta RDTR Kota Mojokerto</title>
-    <link rel="stylesheet" href="https://js.arcgis.com/4.24/esri/themes/light/main.css">
+
+    <link rel="stylesheet" href="https://js.arcgis.com/4.24/esri/themes/light/main.css"/>
     <script src="https://js.arcgis.com/4.24/"></script>
+
     <style>
       html,
       body,
@@ -14,40 +16,67 @@
         height: 100%;
         width: 100%;
       }
+
       #filter-zona {
         height: 220px;
         width: 220px;
         background-color: white;
       }
-      .main {
 
+      #topbar {
+        background: #fff;
+        padding: 0px;
       }
-      .menu {
 
+      .action-button {
+        font-size: 16px;
+        background-color: transparent;
+        border: 1px solid #d3d3d3;
+        color: #6e6e6e;
+        height: 32px;
+        width: 32px;
+        text-align: center;
+        box-shadow: 0 0 1px rgba(0, 0, 0, 0.3);
+      }
+
+      .action-button:hover,
+      .action-button:focus {
+        background: #0079c1;
+        color: #e4e4e4;
+      }
+
+      .active {
+        background: #0079c1;
+        color: #e4e4e4;
       }
     </style>
+
     <script>
       require([
         "esri/Map",
         "esri/views/MapView",
+        "esri/WebMap",
+        "esri/widgets/DistanceMeasurement2D",
+        "esri/widgets/AreaMeasurement2D",
         "esri/layers/GeoJSONLayer",
         "esri/Basemap",
         "esri/widgets/BasemapGallery",
         "esri/widgets/Expand",
         "esri/widgets/Legend",
-        "esri/widgets/Measurement",
         "esri/core/reactiveUtils",
         "esri/widgets/Search",
         "esri/widgets/ScaleBar"
       ], function (
         Map,
         MapView,
+        WebMap,
+        DistanceMeasurement2D,
+        AreaMeasurement2D,
         GeoJSONLayer,
         Basemap,
         BasemapGallery,
         Expand,
         Legend,
-        Measurement,
         reactiveUtils,
         Search,
         ScaleBar) {
@@ -68,6 +97,7 @@
               }
             };
           }
+
           // Bikin simbologi layernya
           const rdtrLayerRenderer = {
             type: "unique-value",
@@ -85,22 +115,26 @@
               createFillSymbol("Zona Sarana Pelayanan Umum", "#DCA078"),
             ]
           }
+
           // Bikin template popup
           const popupPolaRuang = {
             title: "Layer RDTR",
             content: "<b>Zona</b> : {ZONA}<br><hr><b>BWP</b> : {BWP}<br><hr><b>Kode</b> : {KODE}<br><hr><b>SBWP</b> : {SBWP}<br><hr>"
           };
+
           // Bikin layernya
           const layerPolaRuang = new GeoJSONLayer({
             popupTemplate: popupPolaRuang, // Masukin template popup
             renderer: rdtrLayerRenderer, // Masukin simbologinya disini (rdtrLayerRenderer)
             url: "https://raw.githubusercontent.com/arimatiur/tataruang_mojokerto/main/geojson/polaruang.geojson"
           });
+
           // Buat map
           const map = new Map({
             basemap: "topo-vector",
             layers: layerPolaRuang // Layernya kalau banyak jadiin array kalau satu langsung objectnya aja
           });
+
           //Buat mapview dipasang di element viewDiv
           const view = new MapView({
             map: map,
@@ -117,7 +151,14 @@
             },
             container: "viewDiv"
           });
+
           //PEMBUATAN WIDGET
+
+          var perhitunganZona = document.getElementById("perhitungan-zona");
+
+          view.ui.add(info, {
+            position: "bottom-left"
+          });
 
           //Basemap Gallery Start
           const streetsvectorBasemap = Basemap.fromId("streets-vector");
@@ -139,35 +180,74 @@
           });
           //Basemap Gallery End
 
-          //DistanceMeasurement2D Start
-          const measurement = new Measurement({
-            view: view
-          });
+          //Widget Measurement
+          var activeWidget = null;
 
-          const expand = new Expand({
-            view: view,
-            expandTooltip: "Ukur Jarak",
-            expandIconClass: "esri-icon-measure-line",
-            collapseIconClass: "esri-icon-trash"
-          });
-          view.ui.add(expand, "top-left");
+          view.ui.add("topbar", "top-left");
 
-          reactiveUtils.watch(
-            function () {
-              return expand.expanded
-            },
-            function () {
-              distanceMeasurement();
+          document.getElementById("distanceButton").addEventListener("click", function () {
+            setActiveWidget(null);
+            if (!this.classList.contains("active")) {
+              setActiveWidget("distance");
+            } else {
+              setActiveButton(null);
             }
-          );
-          function distanceMeasurement() {
-            if (expand.expanded) {
-              measurement.activeTool = "distance";
-            } else if (!expand.expanded) {
-              measurement.clear();
+          });
+
+          document.getElementById("areaButton").addEventListener("click", function () {
+            setActiveWidget(null);
+            if (!this.classList.contains("active")) {
+              setActiveWidget("area");
+            } else {
+              setActiveButton(null);
+            }
+          });
+
+          function setActiveWidget(type) {
+            switch (type) {
+              case "distance":
+                activeWidget = new DistanceMeasurement2D({
+                  view: view
+                });
+
+                // skip the initial 'new measurement' button
+                activeWidget.viewModel.start();
+
+                view.ui.add(activeWidget, "top-left");
+                setActiveButton(document.getElementById("distanceButton"));
+                break;
+              case "area":
+                activeWidget = new AreaMeasurement2D({
+                  view: view
+                });
+
+                // skip the initial 'new measurement' button
+                activeWidget.viewModel.start();
+
+                view.ui.add(activeWidget, "top-left");
+                setActiveButton(document.getElementById("areaButton"));
+                break;
+              case null:
+                if (activeWidget) {
+                  view.ui.remove(activeWidget);
+                  activeWidget.destroy();
+                  activeWidget = null;
+                }
+                break;
             }
           }
-          //DistanceMeasurement2D End
+
+          function setActiveButton(selectedButton) {
+            // focus the view to activate keyboard shortcuts for sketching
+            view.focus();
+            var elements = document.getElementsByClassName("active");
+            for (var i = 0; i < elements.length; i++) {
+              elements[i].classList.remove("active");
+            }
+            if (selectedButton) {
+              selectedButton.classList.add("active");
+            }
+          }
 
           //Legend Start
           const legend = new Legend({
@@ -243,9 +323,10 @@
           });
           view.on("click", eventHandler);
           //Filter End
-        });
+      });
     </script>
   </head>
+
   <body>
     <div id="viewDiv">
       <div id="filter-zona">
@@ -290,6 +371,27 @@
             <label>Zona Sarana Pelayanan Umum</label>
         </div>
       </div>
+    </div>
+    <div id="topbar">
+      <div>
+        <button
+          class="action-button esri-icon-measure-line"
+          id="distanceButton"
+          type="button"
+          title="Measure distance between two or more points"
+        ></button>
+      </div>
+      <div>
+        <button
+          class="action-button esri-icon-measure-area"
+          id="areaButton"
+          type="button"
+          title="Measure area"
+        ></button>
+      </div>
+    </div>
+    <div id="perhitungan-zona">
+      <span id="name">Sample Text</span>
     </div>
   </body>
 </html>

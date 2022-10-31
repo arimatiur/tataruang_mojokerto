@@ -1,18 +1,10 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta
-      name="viewport"
-      content="initial-scale=1,maximum-scale=1,user-scalable=no"
-    />
-    <title>
-      Filter features by attribute | Sample | ArcGIS API for JavaScript 4.24
-    </title>
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no"/>
+    <title>Peta RDTR Kota Mojokerto</title>
 
-    <link
-      rel="stylesheet"
-      href="https://js.arcgis.com/4.24/esri/themes/light/main.css"
-    />
+    <link rel="stylesheet" href="https://js.arcgis.com/4.24/esri/themes/light/main.css"/>
     <script src="https://js.arcgis.com/4.24/"></script>
 
     <style>
@@ -25,121 +17,381 @@
         width: 100%;
       }
 
-      #seasons-filter {
-        height: 160px;
-        width: 100%;
-        visibility: hidden;
+      #filter-zona {
+        height: 220px;
+        width: 220px;
+        background-color: white;
       }
 
-      .season-item {
-        width: 100%;
-        padding: 12px;
+      #topbar {
+        background: #fff;
+        padding: 0px;
+      }
+
+      .action-button {
+        font-size: 16px;
+        background-color: transparent;
+        border: 1px solid #d3d3d3;
+        color: #6e6e6e;
+        height: 32px;
+        width: 32px;
         text-align: center;
-        vertical-align: baseline;
-        cursor: pointer;
-        height: 40px;
+        box-shadow: 0 0 1px rgba(0, 0, 0, 0.3);
       }
 
-      .season-item:focus {
-        background-color: dimgrey;
+      .action-button:hover,
+      .action-button:focus {
+        background: #0079c1;
+        color: #e4e4e4;
       }
 
-      .season-item:hover {
-        background-color: dimgrey;
-      }
-
-      #titleDiv {
-        padding: 10px;
-      }
-
-      #titleText {
-        font-size: 20pt;
-        font-weight: 60;
-        padding-bottom: 10px;
+      .active {
+        background: #0079c1;
+        color: #e4e4e4;
       }
     </style>
+
     <script>
       require([
-        "esri/views/MapView",
         "esri/Map",
-        "esri/layers/FeatureLayer",
-        "esri/widgets/Expand"
-      ], (MapView, Map, FeatureLayer, Expand) => {
-        let floodLayerView;
+        "esri/views/MapView",
+        "esri/WebMap",
+        "esri/widgets/DistanceMeasurement2D",
+        "esri/widgets/AreaMeasurement2D",
+        "esri/layers/GeoJSONLayer",
+        "esri/Basemap",
+        "esri/widgets/BasemapGallery",
+        "esri/widgets/Expand",
+        "esri/widgets/Legend",
+        "esri/core/reactiveUtils",
+        "esri/widgets/Search",
+        "esri/widgets/ScaleBar"
+      ], function (
+        Map,
+        MapView,
+        WebMap,
+        DistanceMeasurement2D,
+        AreaMeasurement2D,
+        GeoJSONLayer,
+        Basemap,
+        BasemapGallery,
+        Expand,
+        Legend,
+        reactiveUtils,
+        Search,
+        ScaleBar) {
+          // Function untuk warnain layer
+          function createFillSymbol(value, color) {
+            return {
+              "value": value,
+              "label": value,
+              "symbol": {
+                "color": color,
+                "type": "simple-fill",
+                "style": "solid",
+                "outline": {
+                  "style": "solid",
+                  "width": "0.5px",
+                  "color": "#6E6E6E"
+                }
+              }
+            };
+          }
 
-        // flash flood warnings layer
-        const layer = new FeatureLayer({
-          portalItem: {
-            id: "f9e348953b3848ec8b69964d5bceae02"
-          },
-          outFields: ["SEASON"]
-        });
+          // Bikin simbologi layernya
+          const rdtrLayerRenderer = {
+            type: "unique-value",
+            field: "ZONA",
+            uniqueValueInfos: [
+              createFillSymbol("Perlindungan Setempat", "#99FF33"), // Functionnya dipanggil
+              createFillSymbol("Ruang Terbuka Hijau", "#00E271"),
+              createFillSymbol("Zona Campuran", "#E8BEFF"),
+              createFillSymbol("Zona Industri", "#9C9C9C"),
+              createFillSymbol("Zona Perdagangan dan Jasa", "#EB7878"),
+              createFillSymbol("Zona Perkantoran", "#C88CFF"),
+              createFillSymbol("Zona Perumahan", "#FAFA6E"),
+              createFillSymbol("Zona Peruntukan Khusus", "#CCCCD6"),
+              createFillSymbol("Zona Peruntukan Lainnya", "#579687"),
+              createFillSymbol("Zona Sarana Pelayanan Umum", "#DCA078"),
+            ]
+          }
 
-        const map = new Map({
-          basemap: "gray-vector",
-          layers: [layer]
-        });
-
-        const view = new MapView({
-          map: map,
-          container: "viewDiv",
-          center: [-98, 40],
-          zoom: 4
-        });
-
-        const seasonsNodes = document.querySelectorAll(`.season-item`);
-        const seasonsElement = document.getElementById("seasons-filter");
-
-        // click event handler for seasons choices
-        seasonsElement.addEventListener("click", filterBySeason);
-
-        // User clicked on Winter, Spring, Summer or Fall
-        // set an attribute filter on flood warnings layer view
-        // to display the warnings issued in that season
-        function filterBySeason(event) {
-          const selectedSeason = event.target.getAttribute("data-season");
-          floodLayerView.filter = {
-            where: "Season = '" + selectedSeason + "'"
+          // Bikin template popup
+          const popupPolaRuang = {
+            title: "Layer RDTR",
+            content: "<b>Zona</b> : {ZONA}<br><hr><b>BWP</b> : {BWP}<br><hr><b>Kode</b> : {KODE}<br><hr><b>SBWP</b> : {SBWP}<br><hr>"
           };
-        }
 
-        view.whenLayerView(layer).then((layerView) => {
-          // flash flood warnings layer loaded
-          // get a reference to the flood warnings layerview
-          floodLayerView = layerView;
-
-          // set up UI items
-          seasonsElement.style.visibility = "visible";
-          const seasonsExpand = new Expand({
-            view: view,
-            content: seasonsElement,
-            expandIconClass: "esri-icon-filter",
-            group: "top-left"
+          // Bikin layernya
+          const layerPolaRuang = new GeoJSONLayer({
+            popupTemplate: popupPolaRuang, // Masukin template popup
+            renderer: rdtrLayerRenderer, // Masukin simbologinya disini (rdtrLayerRenderer)
+            url: "https://raw.githubusercontent.com/arimatiur/tataruang_mojokerto/main/geojson/polaruang.geojson"
           });
-          //clear the filters when user closes the expand widget
-          seasonsExpand.watch("expanded", () => {
-            if (!seasonsExpand.expanded) {
-              floodLayerView.filter = null;
+
+          // Buat map
+          const map = new Map({
+            basemap: "topo-vector",
+            layers: layerPolaRuang // Layernya kalau banyak jadiin array kalau satu langsung objectnya aja
+          });
+
+          //Buat mapview dipasang di element viewDiv
+          const view = new MapView({
+            map: map,
+            zoom: 14,
+            center: [112.4354276967371, -7.471953679273513],
+            popup: {
+              dockEnabled: true,
+              autoOpenEnabled: true,
+              dockOptions: {
+                breakpoint: false,
+                position: "top-right",
+                buttonEnabled: false
+              }
+            },
+            container: "viewDiv"
+          });
+
+          //PEMBUATAN WIDGET
+
+          var perhitunganZona = document.getElementById("info");
+
+          view.ui.add(info, {
+            position: "bottom-left"
+          });
+
+          //Basemap Gallery Start
+          const streetsvectorBasemap = Basemap.fromId("streets-vector");
+          const osmBasemap = Basemap.fromId("osm");
+          const satelliteBasemap = Basemap.fromId("satellite");
+          const topovectorBasemap = Basemap.fromId("topo-vector");
+          const basemapGallery = new BasemapGallery({
+            view: view,
+            source: [topovectorBasemap, osmBasemap, satelliteBasemap, streetsvectorBasemap]
+          });
+          const bgExpand = new Expand({
+            view: view,
+            content: basemapGallery,
+            expandIconClass: "esri-icon-basemap",
+            expandTooltip: "Basemap"
+          });
+          view.ui.add(bgExpand, {
+            position: "top-left"
+          });
+          //Basemap Gallery End
+
+          //Widget Measurement
+          var activeWidget = null;
+
+          view.ui.add("topbar", "top-left");
+
+          document.getElementById("distanceButton").addEventListener("click", function () {
+            setActiveWidget(null);
+            if (!this.classList.contains("active")) {
+              setActiveWidget("distance");
+            } else {
+              setActiveButton(null);
             }
           });
-          view.ui.add(seasonsExpand, "top-left");
-          view.ui.add("titleDiv", "top-right");
-        });
+
+          document.getElementById("areaButton").addEventListener("click", function () {
+            setActiveWidget(null);
+            if (!this.classList.contains("active")) {
+              setActiveWidget("area");
+            } else {
+              setActiveButton(null);
+            }
+          });
+
+          function setActiveWidget(type) {
+            switch (type) {
+              case "distance":
+                activeWidget = new DistanceMeasurement2D({
+                  view: view
+                });
+
+                // skip the initial 'new measurement' button
+                activeWidget.viewModel.start();
+
+                view.ui.add(activeWidget, "top-left");
+                setActiveButton(document.getElementById("distanceButton"));
+                break;
+              case "area":
+                activeWidget = new AreaMeasurement2D({
+                  view: view
+                });
+
+                // skip the initial 'new measurement' button
+                activeWidget.viewModel.start();
+
+                view.ui.add(activeWidget, "top-left");
+                setActiveButton(document.getElementById("areaButton"));
+                break;
+              case null:
+                if (activeWidget) {
+                  view.ui.remove(activeWidget);
+                  activeWidget.destroy();
+                  activeWidget = null;
+                }
+                break;
+            }
+          }
+
+          function setActiveButton(selectedButton) {
+            // focus the view to activate keyboard shortcuts for sketching
+            view.focus();
+            var elements = document.getElementsByClassName("active");
+            for (var i = 0; i < elements.length; i++) {
+              elements[i].classList.remove("active");
+            }
+            if (selectedButton) {
+              selectedButton.classList.add("active");
+            }
+          }
+
+          //Legend Start
+          const legend = new Legend({
+            view: view,
+            layerInfos: [{
+              title: "Rencana Detail Tata Ruang",
+              layer: layerPolaRuang
+            }]
+          });
+          const legendExpand = new Expand({
+            view: view,
+            content: legend,
+            expandIconClass: "esri-icon-legend",
+            expandTooltip: "Legenda"
+          });
+          view.ui.add(legendExpand, {
+            position: "top-left"
+          });
+          //Legend End
+
+          //Search Start
+          const search = new Search({
+            view: view
+          });
+          view.ui.add(search, {
+            position: "top-right"
+          });
+          //Search End
+
+          //ScaleBar Start
+          const scaleBar = new ScaleBar({
+            view: view,
+            unit: "metric",
+            style: "line"
+          });
+          view.ui.add(scaleBar, {
+            position: "bottom-right"
+          });
+          //ScaleBar End
+
+          //Filter Start
+          let zonaLayerView;
+          const zonaElement = document.getElementById("filter-zona");
+          zonaElement.addEventListener("click", filterByZona);
+          const expandFilter = new Expand({
+            view: view,
+            content: zonaElement,
+            expandIconClass: "esri-icon-filter",
+            expandTooltip: "Filter Zona"
+          });
+          view.ui.add(expandFilter, {
+            position: "top-left"
+          });
+
+          function filterByZona() {
+            const markedCheckbox = document.getElementsByClassName("checkboxCL");
+            const queryWhere = [];
+            for (const checkbox of markedCheckbox) {
+              if (checkbox.checked) {
+                if (queryWhere.length > 0) {
+                  queryWhere.push("OR ZONA LIKE '%" + checkbox.value + "%'");
+                } else {
+                  queryWhere.push("ZONA LIKE '%" + checkbox.value + "%'");
+                }
+              }
+            };
+            zonaLayerView.filter = {
+              where: queryWhere.join(" ").toString()
+            };
+          };
+          view.whenLayerView(layerPolaRuang).then(function (layerView) {
+            zonaLayerView = layerView;
+          });
+          view.on("click", eventHandler);
+          //Filter End
       });
     </script>
   </head>
 
   <body>
-    <div id="seasons-filter" class="esri-widget">
-      <div class="season-item visible-season" data-season="Winter">Winter</div>
-      <div class="season-item visible-season" data-season="Spring">Spring</div>
-      <div class="season-item visible-season" data-season="Summer">Summer</div>
-      <div class="season-item visible-season" data-season="Fall">Fall</div>
+    <div id="viewDiv">
+      <div id="filter-zona">
+        <div class="form-check">
+          <input type="checkbox" value="Perlindungan Setempat" class="checkboxCL">
+            <label>Perlindungan Setempat</label>
+        </div>
+        <div class="form-check">
+          <input type="checkbox" value="Ruang Terbuka Hijau" class="checkboxCL">
+            <label>Ruang Terbuka Hijau</label>
+        </div>
+        <div class="form-check">
+          <input type="checkbox" value="Zona Campuran" class="checkboxCL">
+            <label>Zona Campuran</label>
+        </div>
+        <div class="form-check">
+          <input type="checkbox" value="Zona Industri" class="checkboxCL">
+            <label>Zona Industri</label>
+        </div>
+        <div class="form-check">
+          <input type="checkbox" value="Zona Perdagangan" class="checkboxCL">
+            <label>Zona Perdagangan</label>
+        </div>
+        <div class="form-check">
+          <input type="checkbox" value="Zona Perkantoran" class="checkboxCL">
+            <label>Zona Perkantoran</label>
+        </div>
+        <div class="form-check">
+          <input type="checkbox" value="Zona Perumahan" class="checkboxCL">
+            <label>Zona Perumahan</label>
+        </div>
+        <div class="form-check">
+          <input type="checkbox" value="Zona Peruntukan Khusus" class="checkboxCL">
+            <label>Zona Peruntukan Khusus</label>
+        </div>
+        <div class="form-check">
+          <input type="checkbox" value="Zona Peruntukan Lainnya" class="checkboxCL">
+            <label>Zona Peruntukan Lainnya</label>
+        </div>
+        <div class="form-check">
+          <input type="checkbox" value="Zona Sarana Pelayanan Umum" class="checkboxCL">
+            <label>Zona Sarana Pelayanan Umum</label>
+        </div>
+      </div>
     </div>
-    <div id="viewDiv"></div>
-    <div id="titleDiv" class="esri-widget">
-      <div id="titleText">Flash Floods by Season</div>
-      <div>Flash Flood Warnings (2002 - 2012)</div>
+    <div id="topbar">
+      <div>
+        <button
+          class="action-button esri-icon-measure-line"
+          id="distanceButton"
+          type="button"
+          title="Measure distance between two or more points"
+        ></button>
+      </div>
+      <div>
+        <button
+          class="action-button esri-icon-measure-area"
+          id="areaButton"
+          type="button"
+          title="Measure area"
+        ></button>
+      </div>
+    </div>
+    <div id="info">
+      <span id="name">Sample Text</span>
     </div>
   </body>
 </html>
