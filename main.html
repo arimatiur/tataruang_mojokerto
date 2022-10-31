@@ -223,6 +223,9 @@
 
                 // Measurement labels can be accessed from this property
                 activeWidget.watch("viewModel.measurement", function (measurement) {
+                  if (measurement === null) {
+                    return;
+                  }
                   var ukur = measurement.area.toFixed(2);
                   // ukur.replace(/,/g, '');
                   document.getElementById("ukur").value = ukur;
